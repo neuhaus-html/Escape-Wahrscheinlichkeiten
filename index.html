@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nachts in der Schule – Digitaler Mathe-Escape-Room</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --accent-success: #22c55e;
+      --accent-error: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      max-width: 800px;
+    }
+
+    h1 {
+      color: var(--accent);
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    /* Progress bar */
+    .progress-container {
+      width: 100%;
+      max-width: 800px;
+      background-color: #334155;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 25%;
+      background-color: var(--accent);
+      transition: width 0.4s ease;
+    }
+
+    /* Main Container */
+    .game-container {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid #334155;
+    }
+
+    .room {
+      display: none;
+    }
+
+    .room.active {
+      display: block;
+    }
+
+    .room-title {
+      font-size: 1.5rem;
+      color: #f1f5f9;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 8px;
+    }
+
+    .story-text {
+      line-height: 1.6;
+      margin-bottom: 20px;
+      background-color: rgba(15, 23, 42, 0.5);
+      padding: 15px;
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+    }
+
+    .task-box {
+      background-color: #0f172a;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+    }
+
+    .task-box h3 {
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .input-section {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"] {
+      padding: 12px 16px;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      background-color: #0f172a;
+      color: white;
+      font-size: 1rem;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    button {
+      padding: 12px 24px;
+      border-radius: 6px;
+      border: none;
+      background-color: var(--accent);
+      color: #0f172a;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .hint-btn {
+      background-color: #475569;
+      color: white;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .hint-box {
+      margin-top: 15px;
+      padding: 12px;
+      background-color: #1e293b;
+      border: 1px dashed var(--accent);
+      border-radius: 6px;
+      display: none;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .feedback.error {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: var(--accent-error);
+      border: 1px solid var(--accent-error);
+      display: block;
+    }
+
+    .feedback.success {
+      background-color: rgba(34, 197, 94, 0.2);
+      color: var(--accent-success);
+      border: 1px solid var(--accent-success);
+      display: block;
+    }
+
+    /* Tools Section (Scratchpad & Calculator) */
+    .tools-container {
+      max-width: 800px;
+      width: 100%;
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .tools-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tool-box {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 15px;
+      border: 1px solid #334155;
+    }
+
+    .tool-box h4 {
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+
+    canvas {
+      background-color: #ffffff;
+      border-radius: 6px;
+      width: 100%;
+      height: 150px;
+      cursor: crosshair;
+    }
+
+    .calc-screen {
+      width: 100%;
+      padding: 8px;
+      background: #0f172a;
+      color: var(--accent);
+      border: 1px solid #334155;
+      font-family: monospace;
+      font-size: 1.2rem;
+      text-align: right;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .calc-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+    }
+
+    .calc-btn {
+      padding: 8px;
+      font-size: 0.9rem;
+      background-color: #334155;
+      color: white;
+    }
+
+    /* Victory Screen */
+    .victory-screen {
+      text-align: center;
+      display: none;
+    }
+
+    .victory-screen h2 {
+      color: var(--accent-success);
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    .certificate {
+      border: 3px double var(--accent);
+      padding: 25px;
+      border-radius: 10px;
+      background-color: #0f172a;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🔒 Escape Room: Nachts in der Schule</h1>
+    <p class="subtitle">Nutze dein Stochastik-Wissen aus Klasse 8, um die Codes zu knacken und zu entkommen!</p>
+  </header>
+
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <div class="game-container">
+
+    <!-- RAUM 1 -->
+    <div class="room active" id="room1">
+      <h2 class="room-title">Raum 1: Das Lehrerzimmer</h2>
+      <div class="story-text">
+        Das Sommerfest ist vorbei, die Schultüren sind verschlossen und du steckst im dunklen Lehrerzimmer fest. Auf dem Lehrertisch steht eine Kiste mit Fundsachen. Um den Türschlüssel im Schließfach freizuschalten, musst du das Rätsel auf dem Notizzettel lösen.
+      </div>
+      <div class="task-box">
+        <h3>Aufgabe: Laplace-Wahrscheinlichkeit</h3>
+        <p>In der Kiste liegen 20 Stifte: <strong>8 rote</strong>, <strong>7 blaue</strong> und <strong>5 grüne</strong>. Du greifst blind hinein und ziehst einen Stift.</p>
+        <br>
+        <p>Wie groß ist die Wahrscheinlichkeit (in %), einen <strong>roten ODER grünen</strong> Stift zu ziehen?</p>
+      </div>
+
+      <div class="input-section">
+        <input type="text" id="input1" placeholder="Ergebnis eingeben (z.B. 50)">
+        <button onclick="checkAnswer(1, ['65', '65%', '0.65'])">Code eingeben</button>
+      </div>
+      <div id="feedback1" class="feedback"></div>
+
+      <div>
+        <button class="hint-btn" onclick="toggleHint('r1h1')">💡 Tipp 1</button>
+        <button class="hint-btn" onclick="toggleHint('r1h2')">💡 Tipp 2</button>
+        <button class="hint-btn" onclick="toggleHint('r1h3')">💡 Tipp 3 (Lösungshilfe)</button>
+        
+        <div id="r1h1" class="hint-box">Zähle zusammen, wie viele günstige Stifte es gibt (rote + grüne Stifte).</div>
+        <div id="r1h2" class="hint-box">Laplace-Formel: P = (Anzahl der günstigen Ergebnisse) / (Anzahl aller möglichen Ergebnisse). Mögliche Stifte insgesamt = 20.</div>
+        <div id="r1h3" class="hint-box">Günstig: 8 + 5 = 13 Stifte. Bruch: 13 / 20 = 0,65. Als Prozentzahl: 65.</div>
+      </div>
+    </div>
+
+    <!-- RAUM 2 -->
+    <div class="room" id="room2">
+      <h2 class="room-title">Raum 2: Die Sporthalle</h2>
+      <div class="story-text">
+        Du hast den Flur erreicht, aber der Ausgang führt nur über die Sporthalle. An der Wand hängt ein altes Glücksrad der Fachschaft Mathematik. Daneben ist ein Tastenfeld.
+      </div>
+      <div class="task-box">
+        <h3>Aufgabe: Baumdiagramm & Summenregel</h3>
+        <p>Ein Glücksrad mit 4 gleich großen Feldern (<strong>1x Rot, 1x Blau, 2x Gelb</strong>) wird <strong>zweimal gedreht</strong>.</p>
+        <br>
+        <p>Wie groß ist die Wahrscheinlichkeit (in %), <strong>mindestens einmal Gelb</strong> zu drehen?</p>
+      </div>
+
+      <div class="input-section">
+        <input type="text" id="input2" placeholder="Ergebnis eingeben (z.B. 50)">
+        <button onclick="checkAnswer(2, ['75', '75%', '0.75'])">Code eingeben</button>
+      </div>
+      <div id="feedback2" class="feedback"></div>
+
+      <div>
+        <button class="hint-btn" onclick="toggleHint('r2h1')">💡 Tipp 1</button>
+        <button class="hint-btn" onclick="toggleHint('r2h2')">💡 Tipp 2</button>
+        <button class="hint-btn" onclick="toggleHint('r2h3')">💡 Tipp 3 (Lösungshilfe)</button>
+
+        <div id="r2h1" class="hint-box">Verwende das Zeichenbrett unten, um ein 2-stufiges Baumdiagramm zu skizzieren. P(Gelb) = 2/4 = 0,5 pro Dreh.</div>
+        <div id="r2h2" class="hint-box">"Mindestens einmal Gelb" umfasst die Pfade: (Gelb, Gelb), (Gelb, Nicht-Gelb) und (Nicht-Gelb, Gelb). Berechne deren Wahrscheinlichkeiten und addiere sie (Summenregel).</div>
+        <div id="r2h3" class="hint-box">Schneller mit der Gegenwahrscheinlichkeit: P(kein Gelb) = 1/2 * 1/2 = 1/4 (25%). Gegenwahrscheinlichkeit: 100% - 25% = 75.</div>
+      </div>
+    </div>
+
+    <!-- RAUM 3 -->
+    <div class="room" id="room3">
+      <h2 class="room-title">Raum 3: Das Chemielabor</h2>
+      <div class="story-text">
+        Die Sporthalle endet am Trakt der Naturwissenschaften. Um die Tür zum Außengelände zu entriegeln, musst du eine Flüssigkeitsmischung berechnen.
+      </div>
+      <div class="task-box">
+        <h3>Aufgabe: Pfadregel & Ziehen ohne Zurücklegen</h3>
+        <p>In einem Reagenzglasständer stehen <strong>3 rote</strong> und <strong>2 blaue</strong> Reagenzgläser. Du ziehst blind nacheinander <strong>zwei Reagenzgläser OHNE Zurücklegen</strong>.</p>
+        <br>
+        <p>Wie groß ist die Wahrscheinlichkeit, dass <strong>beide Reagenzgläser rot</strong> sind? Gib das Ergebnis als <strong>gekürzten Bruch</strong> ein (z. B. 3/10).</p>
+      </div>
+
+      <div class="input-section">
+        <input type="text" id="input3" placeholder="Gekürzter Bruch (z.B. 3/10)">
+        <button onclick="checkAnswer(3, ['3/10', '0.3', '30%'])">Code eingeben</button>
+      </div>
+      <div id="feedback3" class="feedback"></div>
+
+      <div>
+        <button class="hint-btn" onclick="toggleHint('r3h1')">💡 Tipp 1</button>
+        <button class="hint-btn" onclick="toggleHint('r3h2')">💡 Tipp 2</button>
+        <button class="hint-btn" onclick="toggleHint('r3h3')">💡 Tipp 3 (Lösungshilfe)</button>
+
+        <div id="r3h1" class="hint-box">Achtung: OHNE Zurücklegen! Nach dem ersten Zug sind nur noch 4 Reagenzgläser im Ständer.</div>
+        <div id="r3h2" class="hint-box">1. Zug (Rot): Wahrscheinlichkeit = 3/5.<br>2. Zug (Rot): Wahrscheinlichkeit = 2/4. Wendest du die Pfadregel an?</div>
+        <div id="r3h3" class="hint-box">Multipliziere die Pfade: (3/5) * (2/4) = 6/20. Gekürzt mit 2 ergibt das 3/10.</div>
+      </div>
+    </div>
+
+    <!-- RAUM 4 -->
+    <div class="room" id="room4">
+      <h2 class="room-title">Raum 4: Das Direktorat (Finaler Ausgang)</h2>
+      <div class="story-text">
+        Du stehst im Büro des Schulleiters vor dem Tresor, der den Hauptschlüssel enthält. Auf dem Tresor liegt ein Rätsel, das dir den finalen 3-stelligen Code verrät.
+      </div>
+      <div class="task-box">
+        <h3>Aufgabe: Gegenwahrscheinlichkeit & Sparsames Baumdiagramm</h3>
+        <p>Laut einer Schulumfrage besitzen <strong>80 % (0,8)</strong> aller Schülerinnen und Schüler ein Fahrrad.</p>
+        <p>Es werden <strong>3 Schüler zufällig befragt</strong> (mit Zurücklegen).</p>
+        <br>
+        <p>Wie groß ist die Wahrscheinlichkeit (in %), dass <strong>mindestens einer KEIN Fahrrad</strong> hat?</p>
+        <p><em>Tipp: Gib die Lösung als Kommazahl mit einer Nachkommastelle ein (z. B. 48.8).</em></p>
+      </div>
+
+      <div class="input-section">
+        <input type="text" id="input4" placeholder="Ergebnis mit Komma (z.B. 48.8)">
+        <button onclick="checkAnswer(4, ['48.8', '48,8', '48.8%', '48,8%'])">Tresor öffnen!</button>
+      </div>
+      <div id="feedback4" class="feedback"></div>
+
+      <div>
+        <button class="hint-btn" onclick="toggleHint('r4h1')">💡 Tipp 1</button>
+        <button class="hint-btn" onclick="toggleHint('r4h2')">💡 Tipp 2</button>
+        <button class="hint-btn" onclick="toggleHint('r4h3')">💡 Tipp 3 (Lösungshilfe)</button>
+
+        <div id="r4h1" class="hint-box">Zeichne NICHT den ganzen Baum mit 8 Pfaden! Es reicht, nur den Gegenpfad zu betrachten.</div>
+        <div id="r4h2" class="hint-box">Das Gegenereignis zu "Mindestens einer hat KEIN Fahrrad" lautet: "ALLE DREI haben ein Fahrrad". Formel: P = 1 - P(alle 3 Fahrrad).</div>
+        <div id="r4h3" class="hint-box">P(alle 3 Fahrrad) = 0,8 * 0,8 * 0,8 = 0,512 (51,2%).<br>Gegenwahrscheinlichkeit: 100% - 51,2% = 48,8.</div>
+      </div>
+    </div>
+
+    <!-- VICTORY SCREEN -->
+    <div class="victory-screen" id="victoryScreen">
+      <h2>🎉 DU HAST ES GESCHAFFT!</h2>
+      <p>Du hast den Schlüssel gefunden und bist erfolgreich aus der Schule entkommen!</p>
+      
+      <div class="certificate">
+        <h3>🏆 URKUNDE 🏆</h3>
+        <br>
+        <p>Hiermit wird bescheinigt, dass du erfolgreich den <strong>Stochastik-Escape-Room der 8. Klasse</strong> gemeistert hast.</p>
+        <br>
+        <p><strong>Gemeisterte Themen:</strong></p>
+        <p>✓ Laplace-Wahrscheinlichkeiten</p>
+        <p>✓ Baumdiagramme & Summenregel</p>
+        <p>✓ Ziehen ohne Zurücklegen & Pfadregeln</p>
+        <p>✓ Effiziente Gegenwahrscheinlichkeit</p>
+      </div>
+      <br>
+      <button onclick="location.reload()">Noch einmal spielen</button>
+    </div>
+
+  </div>
+
+  <!-- TOOLS SECTION -->
+  <div class="tools-container">
+    <!-- Zeichenbrett -->
+    <div class="tool-box">
+      <h4>🎨 Notiz- & Skizzenbrett</h4>
+      <canvas id="scratchpad"></canvas>
+      <button style="margin-top: 8px; width: 100%; padding: 6px;" onclick="clearCanvas()">Skizze löschen</button>
+    </div>
+
+    <!-- Rechner -->
+    <div class="tool-box">
+      <h4>🧮 Taschenrechner</h4>
+      <input type="text" id="calcDisplay" class="calc-screen" readonly value="0">
+      <div class="calc-buttons">
+        <button class="calc-btn" onclick="calcInput('7')">7</button>
+        <button class="calc-btn" onclick="calcInput('8')">8</button>
+        <button class="calc-btn" onclick="calcInput('9')">9</button>
+        <button class="calc-btn" onclick="calcInput('/')">/</button>
+        
+        <button class="calc-btn" onclick="calcInput('4')">4</button>
+        <button class="calc-btn" onclick="calcInput('5')">5</button>
+        <button class="calc-btn" onclick="calcInput('6')">6</button>
+        <button class="calc-btn" onclick="calcInput('*')">*</button>
+        
+        <button class="calc-btn" onclick="calcInput('1')">1</button>
+        <button class="calc-btn" onclick="calcInput('2')">2</button>
+        <button class="calc-btn" onclick="calcInput('3')">3</button>
+        <button class="calc-btn" onclick="calcInput('-')">-</button>
+        
+        <button class="calc-btn" onclick="calcInput('0')">0</button>
+        <button class="calc-btn" onclick="calcInput('.')">.</button>
+        <button class="calc-btn" onclick="calcEval()">=</button>
+        <button class="calc-btn" onclick="calcInput('+')">+</button>
+      </div>
+      <button style="margin-top: 5px; width: 100%; padding: 4px; font-size: 0.8rem;" onclick="calcClear()">C</button>
+    </div>
+  </div>
+
+  <script>
+    // Navigation / Logic
+    function checkAnswer(roomNum, validAnswers) {
+      const input = document.getElementById(`input${roomNum}`).value.trim().toLowerCase().replace(',', '.');
+      const feedback = document.getElementById(`feedback${roomNum}`);
+
+      const isCorrect = validAnswers.some(ans => ans.toLowerCase() === input);
+
+      if (isCorrect) {
+        feedback.className = "feedback success";
+        feedback.innerText = "Richtig! Der Code passt. Raum wird entsperrt...";
+        
+        setTimeout(() => {
+          document.getElementById(`room${roomNum}`).classList.remove('active');
+          const nextRoomNum = roomNum + 1;
+          
+          if (nextRoomNum <= 4) {
+            document.getElementById(`room${nextRoomNum}`).classList.add('active');
+            document.getElementById('progressBar').style.width = `${nextRoomNum * 25}%`;
+          } else {
+            document.getElementById('victoryScreen').style.display = 'block';
+            document.getElementById('progressBar').style.width = '100%';
+          }
+        }, 1200);
+
+      } else {
+        feedback.className = "feedback error";
+        feedback.innerText = "Falscher Code! Überprüfe deine Rechnung oder nutze einen Tipp.";
+      }
+    }
+
+    function toggleHint(hintId) {
+      const hint = document.getElementById(hintId);
+      if (hint.style.display === "block") {
+        hint.style.display = "none";
+      } else {
+        hint.style.display = "block";
+      }
+    }
+
+    // Canvas / Scratchpad
+    const canvas = document.getElementById('scratchpad');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+
+    // Adjust canvas resolution internal
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (isDrawing) {
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseleave', () => isDrawing = false);
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Mini Calculator
+    let calcVal = "";
+    function calcInput(val) {
+      if (calcVal === "0" && val !== ".") calcVal = "";
+      calcVal += val;
+      document.getElementById('calcDisplay').value = calcVal;
+    }
+
+    function calcClear() {
+      calcVal = "";
+      document.getElementById('calcDisplay').value = "0";
+    }
+
+    function calcEval() {
+      try {
+        calcVal = eval(calcVal).toString();
+        document.getElementById('calcDisplay').value = calcVal;
+      } catch (e) {
+        document.getElementById('calcDisplay').value = "Fehler";
+        calcVal = "";
+      }
+    }
+  </script>
+
+</body>
+</html>
