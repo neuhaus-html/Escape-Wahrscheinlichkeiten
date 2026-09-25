@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: Nachts in der Schule</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nightBg: '#0b0f19',
+                        nightCard: '#151c2e',
+                        nightBorder: '#2a3654',
+                        neonCyan: '#06b6d4',
+                        neonAmber: '#f59e0b',
+                        neonEmerald: '#10b981',
+                        neonRose: '#f43f5e',
+                        neonPurple: '#a855f7'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Courier New', 'monospace'],
+                        digital: ['Orbitron', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            user-select: none;
+        }
+        
+        .font-digital {
+            font-family: 'Orbitron', monospace;
+        }
+
+        /* Ambient Glow & Neon Effects */
+        .neon-glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
+        }
+        .neon-glow-amber {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
+        }
+        .neon-glow-rose {
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.35);
+        }
+        .neon-glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+        }
+        
+        /* Festive Lights Garland Animation */
+        .festive-light {
+            animation: pulse-light 2s infinite alternate ease-in-out;
+        }
+        @keyframes pulse-light {
+            0% { opacity: 0.3; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3654;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+
+        /* Scratchpad Canvas */
+        #scratchCanvas {
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        /* Print formatting for official Certificate */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printableCertificate, #printableCertificate * {
+                visibility: visible;
+            }
+            #printableCertificate {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background: white !important;
+                color: black !important;
+                padding: 2rem;
+                border: 10px double #1e293b;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden antialiased">
+
+    <!-- Top Header & Navigation -->
+    <header class="sticky top-0 z-40 bg-nightCard/90 backdrop-blur border-b border-nightBorder px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Title & Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg shadow-md">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+                        Nachts in der Schule
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Mathe-Escape-Room (Klasse 8: Stochastik)</p>
+                </div>
+            </div>
+
+            <!-- Timer & Audio Controls -->
+            <div class="flex items-center space-x-3">
+                <!-- Timer Display -->
+                <div class="flex items-center space-x-2 bg-nightBg/80 px-3 py-1.5 rounded-lg border border-nightBorder">
+                    <svg class="w-4 h-4 text-neonAmber animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span id="timerDisplay" class="font-digital text-neonAmber font-bold text-base tracking-wider">00:00</span>
+                </div>
+
+                <!-- Tools Buttons -->
+                <button onclick="toggleScratchpad()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition" title="Notizblock & Skizzenfeld">
+                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                    </svg>
+                    <span class="hidden md:inline">Skizzenbrett</span>
+                </button>
+
+                <button onclick="toggleCalculator()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition" title="Taschenrechner">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="hidden md:inline">Rechner</span>
+                </button>
+
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition" title="Ton umschalten">
+                    <svg id="soundIconOn" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                    <svg id="soundIconOff" class="w-4 h-4 text-rose-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress Indicator & Inventory -->
+    <div class="bg-nightCard border-b border-nightBorder px-4 py-2.5">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- Room Steps -->
+            <div class="flex items-center space-x-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                <div id="step1" class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                    <span class="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center font-bold text-[10px]">1</span>
+                    <span>Lehrerzimmer</span>
+                </div>
+                <span class="text-slate-600">➔</span>
+                <div id="step2" class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                    <span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-[10px]">2</span>
+                    <span>Sporthalle</span>
+                </div>
+                <span class="text-slate-600">➔</span>
+                <div id="step3" class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                    <span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-[10px]">3</span>
+                    <span>Chemielabor</span>
+                </div>
+                <span class="text-slate-600">➔</span>
+                <div id="step4" class="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                    <span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-[10px]">4</span>
+                    <span>Direktorat</span>
+                </div>
+            </div>
+
+            <!-- Collected Inventory Items -->
+            <div class="flex items-center space-x-2 text-xs text-slate-400 w-full md:w-auto justify-end">
+                <span class="font-semibold text-slate-300">Inventar:</span>
+                <div id="inventoryContainer" class="flex items-center space-x-2">
+                    <span class="italic text-slate-500">Leer</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- ================= INTRO SCREEN ================= -->
+        <section id="screenIntro" class="bg-nightCard border border-nightBorder rounded-2xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
+            <!-- Decorative Background Glow -->
+            <div class="absolute -top-24 -right-24 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Summer Fest Festive Lights SVG Banner -->
+            <div class="flex justify-center space-x-6 mb-6">
+                <div class="w-4 h-4 rounded-full bg-rose-500 festive-light neon-glow-rose"></div>
+                <div class="w-4 h-4 rounded-full bg-amber-400 festive-light neon-glow-amber" style="animation-delay: 0.4s"></div>
+                <div class="w-4 h-4 rounded-full bg-emerald-400 festive-light neon-glow-emerald" style="animation-delay: 0.8s"></div>
+                <div class="w-4 h-4 rounded-full bg-cyan-400 festive-light neon-glow-cyan" style="animation-delay: 1.2s"></div>
+                <div class="w-4 h-4 rounded-full bg-purple-500 festive-light" style="animation-delay: 1.6s"></div>
+            </div>
+
+            <div class="text-center max-w-2xl mx-auto">
+                <span class="px-3 py-1 text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full">
+                    Gefangen in der Schule
+                </span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-4 mb-3 text-white tracking-tight">
+                    Das Sommerfest ist vorbei...
+                </h2>
+                <p class="text-slate-300 leading-relaxed text-sm md:text-base mb-6">
+                    Es ist 22:30 Uhr. Du hast beim Abbauen der Tombolastände nach dem großen Schulfest geholfen. Als du zum Hauptausgang gehst, merkst du: Die Türen sind abgeschlossen, der Hausmeister ist weg und die Alarmanlage schärft sich in wenigen Minuten! 
+                    <br><br>
+                    Um zu entkommen, musst du dich durch 4 Räume der Schule arbeiten. Die Türsysteme wurden mit mathematischen Rätseln gesichert. Löse die stochastischen Aufgaben, sammle Schlüssel und öffne das Haupttor im Direktorat!
+                </p>
+
+                <!-- Student Name Input -->
+                <div class="bg-nightBg/70 p-4 rounded-xl border border-nightBorder mb-6 max-w-md mx-auto text-left">
+                    <label for="playerName" class="block text-xs font-semibold text-slate-300 mb-2">
+                        Name für die Abschluss-Urkunde:
+                    </label>
+                    <input type="text" id="playerName" placeholder="Z. B. Maya & Jonas (8b)" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500 transition">
+                </div>
+
+                <button onclick="startGame()" class="px-8 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg hover:shadow-cyan-500/25 transition transform hover:-translate-y-0.5 text-base flex items-center justify-center space-x-2 mx-auto">
+                    <span>Escape Room starten</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= ROOM 1: LEHRERZIMMER ================= -->
+        <section id="room1" class="hidden space-y-6">
+            <!-- Room Banner Card -->
+            <div class="bg-nightCard border border-nightBorder rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-cyan-400">
+                            <!-- SVG Icon: Safe & Teacher Lounge -->
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Station 1 von 4</span>
+                            <h2 class="text-2xl font-bold text-white">Das Lehrerzimmer</h2>
+                            <p class="text-xs text-slate-400">Thema: Laplace-Wahrscheinlichkeiten & Allgemeine Ereignisse</p>
+                        </div>
+                    </div>
+                    <button onclick="openHintModal(1)" class="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <span>Tipp anfordern (<span id="hintCount1">0</span>/3)</span>
+                    </button>
+                </div>
+
+                <p class="mt-4 text-sm text-slate-300 bg-nightBg/60 p-4 rounded-xl border border-slate-800">
+                    <span class="text-cyan-400 font-semibold">Szenario:</span> Du bist im Lehrerzimmer. Der Schlüssel zur Sporthalle befindet sich in einem Schlüsseltresor. Auf dem Tisch liegen die Auswertungsbögen der Sommerfest-Tombola. Ermittle die gesuchten Wahrscheinlichkeiten, um den <strong>4-stelligen Code</strong> für den Tresor zu berechnen!
+                </p>
+            </div>
+
+            <!-- Mathematical Tasks Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Subtask 1 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-cyan-400 bg-cyan-950 px-2.5 py-1 rounded-md border border-cyan-800">Teil 1: Tombola-Lose</span>
+                        <span class="text-xs text-slate-400">1. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        In der Tombolabox befinden sich insgesamt <strong>100 Lose</strong>: 10 Hauptgewinne, 30 Kleingewinne und 60 Nieten. 
+                        <br>Wie groß ist $P(\text{Gewinn})$ in Prozent?
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 1:</strong> Die 1. Code-Ziffer ist die <u>Zehnerstelle</u> deines Prozentwerts (z. B. bei 40% ist es 4).
+                    </div>
+                </div>
+
+                <!-- Subtask 2 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-cyan-400 bg-cyan-950 px-2.5 py-1 rounded-md border border-cyan-800">Teil 2: Glücksrad der SV</span>
+                        <span class="text-xs text-slate-400">2. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Das Glücksrad hat <strong>10 gleich große Felder</strong>: 2 rote, 3 blaue und 5 gelbe Felder.
+                        <br>Wie groß ist $P(\text{NICHT Gelb})$ in Prozent?
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 2:</strong> Die 2. Code-Ziffer ist die <u>Zehnerstelle</u> dieses Prozentwerts.
+                    </div>
+                </div>
+
+                <!-- Subtask 3 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-cyan-400 bg-cyan-950 px-2.5 py-1 rounded-md border border-cyan-800">Teil 3: Würfelspiel</span>
+                        <span class="text-xs text-slate-400">3. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Ein fairer 6-seitiger Würfel wird 1-mal geworfen. Betrachte das Ereignis $E = \text{"Augenzahl ist mindestens 3"}$.
+                        <br>Wie viele <strong>günstige Ergebnisse</strong> gibt es für dieses Ereignis?
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 3:</strong> Die 3. Code-Ziffer entspricht direkt der Anzahl der günstigen Ergebnisse.
+                    </div>
+                </div>
+
+                <!-- Subtask 4 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-cyan-400 bg-cyan-950 px-2.5 py-1 rounded-md border border-cyan-800">Teil 4: Murmelbeutel</span>
+                        <span class="text-xs text-slate-400">4. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        In einem Stoffbeutel liegen <strong>20 Murmeln</strong> (8 blaue und 12 rote). Eine Murmel wird blind gezogen. 
+                        <br>Wie groß ist $P(\text{Blau})$ in Prozent?
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 4:</strong> Die 4. Code-Ziffer ist die <u>Zehnerstelle</u> dieses Prozentwerts.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Code Keypad Section -->
+            <div class="bg-nightCard border border-nightBorder rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-xl">
+                <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                    <span>Schlüsseltresor-Tastatur</span>
+                </h3>
+
+                <!-- Keypad Display -->
+                <div class="w-64 bg-slate-950 border-2 border-cyan-500/50 rounded-xl p-3 text-center neon-glow-cyan">
+                    <span id="codeDisplay1" class="font-digital text-2xl tracking-[0.5em] text-cyan-400">----</span>
+                </div>
+
+                <!-- On-Screen Keypad -->
+                <div class="grid grid-cols-3 gap-2 w-64">
+                    <button onclick="pressKey(1, '1')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">1</button>
+                    <button onclick="pressKey(1, '2')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">2</button>
+                    <button onclick="pressKey(1, '3')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">3</button>
+                    <button onclick="pressKey(1, '4')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">4</button>
+                    <button onclick="pressKey(1, '5')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">5</button>
+                    <button onclick="pressKey(1, '6')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">6</button>
+                    <button onclick="pressKey(1, '7')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">7</button>
+                    <button onclick="pressKey(1, '8')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">8</button>
+                    <button onclick="pressKey(1, '9')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">9</button>
+                    <button onclick="clearCode(1)" class="py-2.5 bg-rose-900/50 hover:bg-rose-800 text-rose-300 font-bold rounded-lg text-xs transition">C</button>
+                    <button onclick="pressKey(1, '0')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 rounded-lg text-lg font-bold text-slate-200 transition">0</button>
+                    <button onclick="verifyCode(1)" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition">OK</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ROOM 2: SPORTHALLE ================= -->
+        <section id="room2" class="hidden space-y-6">
+            <div class="bg-nightCard border border-nightBorder rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400">
+                            <!-- SVG Icon: Basketball / Gym -->
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2v1a2 2 0 002 2h2.5a2.5 2.5 0 002.5-2.5V11m-12.8 0c.34-.112.693-.21 1.055-.29M12 21a9 9 0 100-18 9 9 0 000 18z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Station 2 von 4</span>
+                            <h2 class="text-2xl font-bold text-white">Die Sporthalle</h2>
+                            <p class="text-xs text-slate-400">Thema: Baumdiagramm & Summenregel (Mehrstufige Versuche)</p>
+                        </div>
+                    </div>
+                    <button onclick="openHintModal(2)" class="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <span>Tipp anfordern (<span id="hintCount2">0</span>/3)</span>
+                    </button>
+                </div>
+
+                <p class="mt-4 text-sm text-slate-300 bg-nightBg/60 p-4 rounded-xl border border-slate-800">
+                    <span class="text-amber-400 font-semibold">Szenario:</span> Mit dem Schlüssel öffnest du die Sporthalle. Die Hallenbeleuchtung summ leise. Die Durchgangstür zum Chemielabor ist mit einem Ziffernschloss an einem Metallschrank versperrt. Daneben hängen die Statistiken der Wurf- und Slush-Eis-Stände vom Fest!
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Subtask 1 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-400 bg-amber-950 px-2.5 py-1 rounded-md border border-amber-800">Teil 1: Slush-Eis-Automat</span>
+                        <span class="text-xs text-slate-400">1. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Ein Automat mischt zufällig 2 Sorten: $P(\text{Kirsch}) = 0{,}6$ ($60\%$) und $P(\text{Waldmeister}) = 0{,}4$ ($40\%$). Ein Schüler zapft nacheinander <strong>2 Becher (mit Zurücklegen/unabhängig)</strong>.
+                        <br>Berechne $P(\text{Kirsch, Kirsch})$.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 1:</strong> Nimm die <u>Zehnerstelle</u> deines Prozentwerts (z. B. $0{,}6 \cdot 0{,}6 = 0{,}36 = 36\% \rightarrow 3$).
+                    </div>
+                </div>
+
+                <!-- Subtask 2 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-400 bg-amber-950 px-2.5 py-1 rounded-md border border-amber-800">Teil 2: Summenregel</span>
+                        <span class="text-xs text-slate-400">2. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Nutze das Baumdiagramm aus Teil 1: Wie groß ist die Wahrscheinlichkeit, dass beide Becher <strong>die gleiche Sorte</strong> haben?
+                        <br>$P(\text{Gleiche Sorte}) = P(\text{K,K}) + P(\text{W,W})$.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 2:</strong> Berechne den Prozentwert. Die 2. Code-Ziffer ist die <u>Zehnerstelle</u> dieses Prozentwerts.
+                    </div>
+                </div>
+
+                <!-- Subtask 3 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-400 bg-amber-950 px-2.5 py-1 rounded-md border border-amber-800">Teil 3: Dosenwerfen</span>
+                        <span class="text-xs text-slate-400">3. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Beim Dosenwerfen trifft Ben mit $P(\text{Treffer}) = 0{,}7$. Er wirft 2 Bälle. 
+                        <br>Berechne die Wahrscheinlichkeit für <strong>genau einen Treffer</strong> über die Summenregel der beiden Pfade (Treffer/Fehl und Fehl/Treffer).
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 3:</strong> Die 3. Code-Ziffer ist die <u>Zehnerstelle</u> des Prozentwerts.
+                    </div>
+                </div>
+
+                <!-- Subtask 4 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-400 bg-amber-950 px-2.5 py-1 rounded-md border border-amber-800">Teil 4: Augensumme beim Würfeln</span>
+                        <span class="text-xs text-slate-400">4. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Zwei normale 6-seitige Würfel werden geworfen (36 Pfade).
+                        <br>Wie viele Ergebnisse erfüllen das Ereignis $E = \text{"Augensumme ist mindestens 10"}$ (Augensumme 10, 11 oder 12)?
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 4:</strong> Die 4. Code-Ziffer ist genau die <u>Anzahl dieser günstigen Fälle</u>.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Keypad Room 2 -->
+            <div class="bg-nightCard border border-nightBorder rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-xl">
+                <h3 class="text-base font-bold text-white">Sporthallen-Schrank-Code</h3>
+                <div class="w-64 bg-slate-950 border-2 border-amber-500/50 rounded-xl p-3 text-center neon-glow-amber">
+                    <span id="codeDisplay2" class="font-digital text-2xl tracking-[0.5em] text-amber-400">----</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 w-64">
+                    <button onclick="pressKey(2, '1')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">1</button>
+                    <button onclick="pressKey(2, '2')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">2</button>
+                    <button onclick="pressKey(2, '3')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">3</button>
+                    <button onclick="pressKey(2, '4')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">4</button>
+                    <button onclick="pressKey(2, '5')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">5</button>
+                    <button onclick="pressKey(2, '6')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">6</button>
+                    <button onclick="pressKey(2, '7')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">7</button>
+                    <button onclick="pressKey(2, '8')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">8</button>
+                    <button onclick="pressKey(2, '9')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">9</button>
+                    <button onclick="clearCode(2)" class="py-2.5 bg-rose-900/50 hover:bg-rose-800 text-rose-300 font-bold rounded-lg text-xs transition">C</button>
+                    <button onclick="pressKey(2, '0')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-amber-600 rounded-lg text-lg font-bold text-slate-200 transition">0</button>
+                    <button onclick="verifyCode(2)" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition">OK</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ROOM 3: CHEMIELABOR ================= -->
+        <section id="room3" class="hidden space-y-6">
+            <div class="bg-nightCard border border-nightBorder rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400">
+                            <!-- SVG Icon: Chemistry Flask -->
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Station 3 von 4</span>
+                            <h2 class="text-2xl font-bold text-white">Das Chemielabor</h2>
+                            <p class="text-xs text-slate-400">Thema: Pfadregel & Ziehen OHNE Zurücklegen</p>
+                        </div>
+                    </div>
+                    <button onclick="openHintModal(3)" class="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <span>Tipp anfordern (<span id="hintCount3">0</span>/3)</span>
+                    </button>
+                </div>
+
+                <p class="mt-4 text-sm text-slate-300 bg-nightBg/60 p-4 rounded-xl border border-slate-800">
+                    <span class="text-emerald-400 font-semibold">Szenario:</span> Im Chemieraum leuchten Reagenzgläser im Schwarzlicht. Achtung: Bei Entnahmen <strong>ohne Zurücklegen</strong> verringert sich die Gesamtzahl der Proben bei jedem Zug! Knacke die Pfadregeln für die Sicherheitstür zum Direktorat.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Subtask 1 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded-md border border-emerald-800">Teil 1: Reagenzglas-Rack</span>
+                        <span class="text-xs text-slate-400">1. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        In einem Reagenzglasständer stehen <strong>4 blaue und 6 rote Gläser</strong> (insgesamt 10 Gläser). Es werden nacheinander <strong>2 Gläser ohne Zurücklegen</strong> entnommen.
+                        <br>Berechne $P(\text{Erstes Blau, Zweites Blau}) = \frac{4}{10} \cdot \frac{3}{9} = \frac{12}{90}$.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 1:</strong> Die 1. Ziffer ist die <u>Zehnerstelle des Zählers</u> 12. (Ergebnis = 1).
+                    </div>
+                </div>
+
+                <!-- Subtask 2 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded-md border border-emerald-800">Teil 2: Zuerst Rot, dann Blau</span>
+                        <span class="text-xs text-slate-400">2. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Nutze dieselbe Kiste (4 blaue, 6 rote Gläser; Ziehen ohne Zurücklegen).
+                        <br>Berechne $P(\text{Erstes Rot, Zweites Blau}) = \frac{6}{10} \cdot \frac{4}{9} = \frac{24}{90}$.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 2:</strong> Die 2. Code-Ziffer ist die <u>Zehnerstelle des Zählers</u> 24.
+                    </div>
+                </div>
+
+                <!-- Subtask 3 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded-md border border-emerald-800">Teil 3: Säure-Proben</span>
+                        <span class="text-xs text-slate-400">3. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        In einer Box liegen <strong>5 Säuren und 5 neutrale Proben</strong> (10 Proben). Zwei werden ohne Zurücklegen gezogen. 
+                        <br>Der Zähler von $P(\text{Beide Säuren})$ als Bruch mit Nenner 90 ist $5 \cdot 4 = 20$.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 3:</strong> Teile den Zähler $20$ durch $5$. Das Ergebnis ist die 3. Ziffer.
+                    </div>
+                </div>
+
+                <!-- Subtask 4 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded-md border border-emerald-800">Teil 4: Knicklichter</span>
+                        <span class="text-xs text-slate-400">4. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        In einer Schachtel liegen <strong>8 intakte und 2 defekte Knicklichter</strong> (10 Stk.). Zwei werden ohne Zurücklegen gezogen.
+                        <br>Berechne $P(\text{Beide intakt}) = \frac{8}{10} \cdot \frac{7}{9} = \frac{56}{90}$.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 4:</strong> Die 4. Code-Ziffer ist die <u>Einerstelle des Zählers</u> 56.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Keypad Room 3 -->
+            <div class="bg-nightCard border border-nightBorder rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-xl">
+                <h3 class="text-base font-bold text-white">Labor-Sicherheitstor-Code</h3>
+                <div class="w-64 bg-slate-950 border-2 border-emerald-500/50 rounded-xl p-3 text-center neon-glow-emerald">
+                    <span id="codeDisplay3" class="font-digital text-2xl tracking-[0.5em] text-emerald-400">----</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 w-64">
+                    <button onclick="pressKey(3, '1')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">1</button>
+                    <button onclick="pressKey(3, '2')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">2</button>
+                    <button onclick="pressKey(3, '3')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">3</button>
+                    <button onclick="pressKey(3, '4')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">4</button>
+                    <button onclick="pressKey(3, '5')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">5</button>
+                    <button onclick="pressKey(3, '6')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">6</button>
+                    <button onclick="pressKey(3, '7')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">7</button>
+                    <button onclick="pressKey(3, '8')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">8</button>
+                    <button onclick="pressKey(3, '9')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">9</button>
+                    <button onclick="clearCode(3)" class="py-2.5 bg-rose-900/50 hover:bg-rose-800 text-rose-300 font-bold rounded-lg text-xs transition">C</button>
+                    <button onclick="pressKey(3, '0')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 rounded-lg text-lg font-bold text-slate-200 transition">0</button>
+                    <button onclick="verifyCode(3)" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition">OK</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ROOM 4: DIREKTORAT ================= -->
+        <section id="room4" class="hidden space-y-6">
+            <div class="bg-nightCard border border-nightBorder rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-400">
+                            <!-- SVG Icon: Terminal / Exit Master Door -->
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Station 4 von 4 (Finale)</span>
+                            <h2 class="text-2xl font-bold text-white">Das Direktorat</h2>
+                            <p class="text-xs text-slate-400">Thema: Gegenwahrscheinlichkeit $P(E) = 1 - P(\bar{E})$ & Sparsame Baumdiagramme</p>
+                        </div>
+                    </div>
+                    <button onclick="openHintModal(4)" class="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <span>Tipp anfordern (<span id="hintCount4">0</span>/3)</span>
+                    </button>
+                </div>
+
+                <p class="mt-4 text-sm text-slate-300 bg-nightBg/60 p-4 rounded-xl border border-slate-800">
+                    <span class="text-purple-400 font-semibold">Szenario:</span> Du stehst im Direktorat vor dem Hauptterminal der Schule. Anstatt ein riesiges Baumdiagramm mit 16 Verzweigungen zu zeichnen, schlägt dir das Terminal vor: Nutze den Trick der <strong>Gegenwahrscheinlichkeit</strong> $P(\text{Mindestens ein...}) = 1 - P(\text{Kein...})$!
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Subtask 1 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-purple-400 bg-purple-950 px-2.5 py-1 rounded-md border border-purple-800">Teil 1: Gegenereignis erkennen</span>
+                        <span class="text-xs text-slate-400">1. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Jedes 5. Tombola-Los gewinnt ($P(\text{Gewinn}) = 0{,}2 = 20\%$). Ein Schüler kauft <strong>4 Lose</strong>. Gesucht ist $P(\text{"Mindestens ein Gewinn"})$.
+                        <br>Was ist das exakte Gegenereignis?
+                    </p>
+                    <div class="space-y-1 text-xs text-slate-300">
+                        <div>1 = "Genau 4 Gewinne"</div>
+                        <div>2 = "Kein einziger Gewinn" (4 Nieten)</div>
+                        <div>3 = "Höchstens 3 Gewinne"</div>
+                    </div>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 1:</strong> Die Nummer der richtigen Option (1, 2 oder 3) ist deine 1. Code-Ziffer.
+                    </div>
+                </div>
+
+                <!-- Subtask 2 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-purple-400 bg-purple-950 px-2.5 py-1 rounded-md border border-purple-800">Teil 2: Gegenwahrscheinlichkeit</span>
+                        <span class="text-xs text-slate-400">2. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Eine Niete hat $P(\text{Niete}) = 0{,}8$. Bei 4 Losen ist $P(\text{4 Nieten}) = 0{,}8^4 = 0{,}4096 = 40{,}96\%$.
+                        <br>Grounded auf die nächste ganze Prozentzahl ergibt dies <strong>41%</strong>.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 2:</strong> Die 2. Ziffer ist die <u>Zehnerstelle von 41%</u> (also 4).
+                    </div>
+                </div>
+
+                <!-- Subtask 3 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-purple-400 bg-purple-950 px-2.5 py-1 rounded-md border border-purple-800">Teil 3: Zielwahrscheinlichkeit</span>
+                        <span class="text-xs text-slate-400">3. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Berechne nun die Zielwahrscheinlichkeit: 
+                        <br>$P(\text{Mindestens 1 Gewinn}) = 100\% - 40{,}96\% = 59{,}04\%$.
+                        <br>Grounded auf eine ganze Prozentzahl erhältst du <strong>59%</strong>.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 3:</strong> Die 3. Code-Ziffer ist die <u>Zehnerstelle von 59%</u> (also 5).
+                    </div>
+                </div>
+
+                <!-- Subtask 4 -->
+                <div class="bg-nightCard border border-nightBorder rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-purple-400 bg-purple-950 px-2.5 py-1 rounded-md border border-purple-800">Teil 4: Dreifacher Würfelwurf</span>
+                        <span class="text-xs text-slate-400">4. Ziffer</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Ein Würfel wird 3-mal geworfen. Wie groß ist $P(\text{Mindestens eine 6})$?
+                        <br>$P(\text{Keine 6 in 3 Würfen}) = (\frac{5}{6})^3 = \frac{125}{216} \approx 57{,}87\%$.
+                        <br>$P(\text{Mindestens eine 6}) = 100\% - 57{,}87\% = 42{,}13\% \approx \mathbf{42\%}$.
+                    </p>
+                    <div class="text-xs text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        🔑 <strong>Hinweis für Ziffer 4:</strong> Die 4. Code-Ziffer ist die <u>Einerstelle der gerundeten 42%</u> (also 2).
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Keypad Room 4 -->
+            <div class="bg-nightCard border border-nightBorder rounded-2xl p-6 flex flex-col items-center justify-center space-y-4 shadow-xl">
+                <h3 class="text-base font-bold text-white">Hauptausgangs-Terminal-Code</h3>
+                <div class="w-64 bg-slate-950 border-2 border-purple-500/50 rounded-xl p-3 text-center neon-glow-rose">
+                    <span id="codeDisplay4" class="font-digital text-2xl tracking-[0.5em] text-purple-400">----</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 w-64">
+                    <button onclick="pressKey(4, '1')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">1</button>
+                    <button onclick="pressKey(4, '2')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">2</button>
+                    <button onclick="pressKey(4, '3')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">3</button>
+                    <button onclick="pressKey(4, '4')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">4</button>
+                    <button onclick="pressKey(4, '5')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">5</button>
+                    <button onclick="pressKey(4, '6')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">6</button>
+                    <button onclick="pressKey(4, '7')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">7</button>
+                    <button onclick="pressKey(4, '8')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">8</button>
+                    <button onclick="pressKey(4, '9')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">9</button>
+                    <button onclick="clearCode(4)" class="py-2.5 bg-rose-900/50 hover:bg-rose-800 text-rose-300 font-bold rounded-lg text-xs transition">C</button>
+                    <button onclick="pressKey(4, '0')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-purple-600 rounded-lg text-lg font-bold text-slate-200 transition">0</button>
+                    <button onclick="verifyCode(4)" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition">OK</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VICTORY ENDSCREEN ================= -->
+        <section id="screenVictory" class="hidden bg-nightCard border border-nightBorder rounded-2xl p-6 md:p-10 shadow-2xl space-y-8">
+            
+            <div class="text-center space-y-4">
+                <div class="inline-flex p-4 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/40 neon-glow-emerald">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-extrabold text-white">DU HAST ES GESCHAFFT!</h2>
+                <p class="text-slate-300 max-w-xl mx-auto text-sm md:text-base">
+                    Das Haupttor schwingt auf! Du hast alle stochastischen Rätsel bravourös gelöst und die nächtliche Schule erfolgreich verlassen.
+                </p>
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                <div class="bg-nightBg/80 p-4 rounded-xl border border-slate-800 text-center">
+                    <span class="text-xs text-slate-400 block mb-1">Benötigte Zeit</span>
+                    <span id="finalTime" class="font-digital text-2xl text-cyan-400 font-bold">--:--</span>
+                </div>
+                <div class="bg-nightBg/80 p-4 rounded-xl border border-slate-800 text-center">
+                    <span class="text-xs text-slate-400 block mb-1">Genutzte Tipps</span>
+                    <span id="finalHints" class="font-digital text-2xl text-amber-400 font-bold">0 / 12</span>
+                </div>
+                <div class="bg-nightBg/80 p-4 rounded-xl border border-slate-800 text-center">
+                    <span class="text-xs text-slate-400 block mb-1">Bewertung</span>
+                    <span id="finalStars" class="text-xl text-yellow-400 font-bold">⭐⭐⭐⭐⭐</span>
+                </div>
+            </div>
+
+            <!-- Certificate Container (Screen View + Printable) -->
+            <div id="printableCertificate" class="bg-slate-900 border-2 border-indigo-500/40 rounded-2xl p-6 md:p-8 max-w-2xl mx-auto text-slate-900 relative">
+                <div class="border-4 border-dashed border-indigo-400/40 p-6 rounded-xl text-center space-y-4 bg-white/95">
+                    <div class="text-xs font-bold uppercase tracking-widest text-indigo-900">Offizielle Urkunde</div>
+                    <h3 class="text-2xl md:text-3xl font-extrabold text-slate-900">Meister der Wahrscheinlichkeit</h3>
+                    <p class="text-xs text-slate-600">Diese Urkunde bestätigt, dass</p>
+                    
+                    <div id="certName" class="text-xl md:text-2xl font-bold text-indigo-700 underline decoration-indigo-400 decoration-2">
+                        Schülerin / Schüler
+                    </div>
+
+                    <p class="text-xs text-slate-700 max-w-md mx-auto leading-relaxed">
+                        den digitalen Mathematik-Escape-Room <strong>"Nachts in der Schule gefangen"</strong> erfolgreich absolviert und sämtliche Aufgaben zu Laplace-Wahrscheinlichkeiten, Summen- und Pfadregeln sowie Gegenwahrscheinlichkeiten gelöst hat.
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-300 max-w-md mx-auto">
+                        <div>
+                            <span class="text-slate-500 block">Datum:</span>
+                            <span id="certDate" class="font-semibold text-slate-800">--.--.----</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 block">Status:</span>
+                            <span class="font-semibold text-emerald-700">Entkommen!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Print Button -->
+            <div class="text-center pt-2">
+                <button onclick="window.print()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition inline-flex items-center space-x-2 text-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    <span>Urkunde drucken / Als PDF speichern</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODALS & DRAWERS ================= -->
+
+    <!-- HINT SYSTEM MODAL -->
+    <div id="hintModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-nightCard border border-nightBorder rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
+            <div class="flex items-center justify-between border-b border-nightBorder pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <span class="text-amber-400">💡</span>
+                    <span>Tipps für Raum <span id="hintModalRoomNum">1</span></span>
+                </h3>
+                <button onclick="closeHintModal()" class="text-slate-400 hover:text-white p-1 text-xl font-bold">&times;</button>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Hint Level 1 -->
+                <div class="bg-nightBg p-3.5 rounded-xl border border-slate-800">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-amber-400">Tipp 1: Denkanstoß</span>
+                        <button id="btnUnlockHint1" onclick="unlockHint(1)" class="text-[11px] px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 font-semibold transition">Freischalten</button>
+                    </div>
+                    <p id="textHint1" class="text-xs text-slate-400 italic">Noch nicht freigeschaltet...</p>
+                </div>
+
+                <!-- Hint Level 2 -->
+                <div class="bg-nightBg p-3.5 rounded-xl border border-slate-800">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-amber-400">Tipp 2: Formel & Rechenweg</span>
+                        <button id="btnUnlockHint2" onclick="unlockHint(2)" class="text-[11px] px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 font-semibold transition">Freischalten</button>
+                    </div>
+                    <p id="textHint2" class="text-xs text-slate-400 italic">Noch nicht freigeschaltet...</p>
+                </div>
+
+                <!-- Hint Level 3 -->
+                <div class="bg-nightBg p-3.5 rounded-xl border border-slate-800">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-amber-400">Tipp 3: Fast-Lösung</span>
+                        <button id="btnUnlockHint3" onclick="unlockHint(3)" class="text-[11px] px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 font-semibold transition">Freischalten</button>
+                    </div>
+                    <p id="textHint3" class="text-xs text-slate-400 italic">Noch nicht freigeschaltet...</p>
+                </div>
+            </div>
+
+            <div class="pt-2 text-right">
+                <button onclick="closeHintModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRATCHPAD / CANVAS DRAWER -->
+    <div id="scratchpadDrawer" class="fixed bottom-0 right-0 left-0 md:left-auto md:w-96 bg-nightCard border-t md:border-l border-nightBorder z-50 p-4 shadow-2xl rounded-t-2xl hidden">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-cyan-400 flex items-center space-x-1">
+                <span>🎨 Skizzenbrett (Baumdiagramme zeichnen)</span>
+            </span>
+            <button onclick="toggleScratchpad()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden mb-2">
+            <canvas id="scratchCanvas" width="350" height="220" class="w-full bg-slate-950"></canvas>
+        </div>
+
+        <div class="flex items-center justify-between gap-2 text-xs">
+            <!-- Colors -->
+            <div class="flex items-center space-x-1">
+                <button onclick="setCanvasColor('#f1f5f9')" class="w-5 h-5 rounded-full bg-slate-100 border border-slate-400"></button>
+                <button onclick="setCanvasColor('#06b6d4')" class="w-5 h-5 rounded-full bg-cyan-400"></button>
+                <button onclick="setCanvasColor('#f59e0b')" class="w-5 h-5 rounded-full bg-amber-400"></button>
+                <button onclick="setCanvasColor('#10b981')" class="w-5 h-5 rounded-full bg-emerald-400"></button>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="clearCanvas()" class="px-2.5 py-1 bg-rose-900/50 hover:bg-rose-800 text-rose-300 text-[11px] rounded transition">Löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CALCULATOR DRAWER -->
+    <div id="calcDrawer" class="fixed bottom-0 right-0 left-0 md:left-auto md:w-80 bg-nightCard border-t md:border-l border-nightBorder z-50 p-4 shadow-2xl rounded-t-2xl hidden">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-emerald-400">🧮 Taschenrechner</span>
+            <button onclick="toggleCalculator()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+            <div id="calcDisplay" class="font-digital text-xl text-right text-emerald-400 bg-black/50 p-2 rounded border border-slate-800 min-h-[40px] overflow-x-auto">0</div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-bold">
+                <button onclick="calcInput('C')" class="p-2 bg-rose-900/60 text-rose-300 rounded hover:bg-rose-800">C</button>
+                <button onclick="calcInput('(')" class="p-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700">(</button>
+                <button onclick="calcInput(')')" class="p-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700">)</button>
+                <button onclick="calcInput('/')" class="p-2 bg-indigo-900/60 text-indigo-300 rounded hover:bg-indigo-800">÷</button>
+
+                <button onclick="calcInput('7')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">7</button>
+                <button onclick="calcInput('8')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">8</button>
+                <button onclick="calcInput('9')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">9</button>
+                <button onclick="calcInput('*')" class="p-2 bg-indigo-900/60 text-indigo-300 rounded hover:bg-indigo-800">×</button>
+
+                <button onclick="calcInput('4')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">4</button>
+                <button onclick="calcInput('5')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">5</button>
+                <button onclick="calcInput('6')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">6</button>
+                <button onclick="calcInput('-')" class="p-2 bg-indigo-900/60 text-indigo-300 rounded hover:bg-indigo-800">-</button>
+
+                <button onclick="calcInput('1')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">1</button>
+                <button onclick="calcInput('2')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">2</button>
+                <button onclick="calcInput('3')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">3</button>
+                <button onclick="calcInput('+')" class="p-2 bg-indigo-900/60 text-indigo-300 rounded hover:bg-indigo-800">+</button>
+
+                <button onclick="calcInput('0')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700 col-span-2">0</button>
+                <button onclick="calcInput('.')" class="p-2.5 bg-slate-800 text-slate-200 rounded hover:bg-slate-700">,</button>
+                <button onclick="calcInput('=')" class="p-2.5 bg-emerald-600 text-white rounded hover:bg-emerald-500">=</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-20 right-4 z-50 bg-slate-900 text-white border px-4 py-3 rounded-xl shadow-2xl transition transform translate-x-full opacity-0 max-w-sm text-xs font-semibold"></div>
+
+    <!-- ================= JAVASCRIPT GAME ENGINE ================= -->
+    <script>
+        // Room Codes
+        const ROOM_CODES = {
+            1: "4544",
+            2: "3546",
+            3: "1246",
+            4: "2452"
+        };
+
+        // Inventory item titles
+        const INVENTORY_ITEMS = {
+            1: "🔑 Sporthallenschlüssel",
+            2: "💳 Chemielabor-Chipkarte",
+            3: "🔓 Transponder Direktorat",
+            4: "🗝️ Schultor-Meisterschlüssel"
+        };
+
+        // Hint Database
+        const HINT_DATABASE = {
+            1: {
+                1: "Schau dir die Grundformel an: P(E) = (Anzahl günstige Ergebnisse) / (Anzahl mögliche Ergebnisse). Wandle in Prozent um.",
+                2: "Teil 1: 10 + 30 = 40 Gewinne von 100. P = 40/100 = 40%. Teil 2: 2 Rot + 3 Blau = 5 Felder nicht gelb. 5/10 = 50%.",
+                3: "Lösungen: Teil 1 -> 40% (4), Teil 2 -> 50% (5), Teil 3 -> Augenzahlen 3,4,5,6 (4 Ergebnisse), Teil 4 -> 8/20 = 40% (4). Code: 4544."
+            },
+            2: {
+                1: "Erstelle ein Baumdiagramm mit 2 Stufen. Multipliziere Wahrscheinlichkeiten entlang eines Pfades (Pfadregel).",
+                2: "Teil 1: P(K,K) = 0,6 * 0,6 = 0,36 (36%). Teil 2: P(W,W) = 0,4 * 0,4 = 0,16 (16%). Summe = 36% + 16% = 52%.",
+                3: "Lösungen: Teil 1 -> 36% (3), Teil 2 -> 52% (5), Teil 3 -> (0,7*0,3)+(0,3*0,7) = 42% (4), Teil 4 -> (4,6),(5,5),(5,6),(6,4),(6,5),(6,6) = 6 Fälle. Code: 3546."
+            },
+            3: {
+                1: "Achtung: Ziehen OHNE Zurücklegen! Beim 2. Zug sind nur noch 9 Gläser/Proben im Rack.",
+                2: "Teil 1: (4/10) * (3/9) = 12/90. Teil 2: (6/10) * (4/9) = 24/90. Teil 3: (5/10) * (4/9) = 20/90.",
+                3: "Lösungen: Teil 1 -> Zähler 12 (Zehnerstelle = 1), Teil 2 -> Zähler 24 (Zehnerstelle = 2), Teil 3 -> 20 / 5 = 4, Teil 4 -> (8/10)*(7/9) = 56/90 (Einerstelle = 6). Code: 1246."
+            },
+            4: {
+                1: "Nutze P(Mindestens 1) = 1 - P(Kein). Das Gegenereignis ist nur ein einziger Pfad!",
+                2: "Teil 1: Option 2 ist richtig (Kein Gewinn). Teil 2: P(Niete)^4 = 0,8^4 = 0,4096 = 41%. Teil 3: 100% - 40,96% = 59,04% = 59%.",
+                3: "Lösungen: Teil 1 -> Option 2 (2), Teil 2 -> 41% (4), Teil 3 -> 59% (5), Teil 4 -> 100% - (5/6)^3 = 42,13% = 42% (2). Code: 2452."
+            }
+        };
+
+        // Game State
+        let currentRoom = 1;
+        let currentInputs = { 1: "", 2: "", 3: "", 4: "" };
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let hintsUnlocked = { 1: [false, false, false], 2: [false, false, false], 3: [false, false, false], 4: [false, false, false] };
+        let totalHintsUsedCount = 0;
+        let audioEnabled = true;
+        let activeHintModalRoom = 1;
+
+        // Sound Synthesizer (Web Audio API)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioEnabled) return;
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'success') {
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.setValueAtTime(150, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'fanfare') {
+                    const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((f, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(f, now + idx * 0.12);
+                        g.gain.setValueAtTime(0.2, now + idx * 0.12);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.3);
+                        o.start(now + idx * 0.12);
+                        o.stop(now + idx * 0.12 + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio not supported or blocked", e);
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            document.getElementById('soundIconOn').classList.toggle('hidden', !audioEnabled);
+            document.getElementById('soundIconOff').classList.toggle('hidden', audioEnabled);
+        }
+
+        function startGame() {
+            playSound('click');
+            document.getElementById('screenIntro').classList.add('hidden');
+            document.getElementById('room1').classList.remove('hidden');
+
+            // Set Certificate Name
+            const nameInput = document.getElementById('playerName').value.trim();
+            document.getElementById('certName').innerText = nameInput || "Schülerin / Schüler (Klasse 8)";
+
+            // Start Timer
+            timerSeconds = 0;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+                const secs = String(timerSeconds % 60).padStart(2, '0');
+                document.getElementById('timerDisplay').innerText = `${mins}:${secs}`;
+            }, 1000);
+
+            showToast("🔒 Du stehst im Lehrerzimmer. Finde den Code!", "border-cyan-500 text-cyan-300");
+        }
+
+        function pressKey(roomNum, digit) {
+            playSound('click');
+            if (currentInputs[roomNum].length < 4) {
+                currentInputs[roomNum] += digit;
+                updateDisplay(roomNum);
+            }
+        }
+
+        function clearCode(roomNum) {
+            playSound('click');
+            currentInputs[roomNum] = "";
+            updateDisplay(roomNum);
+        }
+
+        function updateDisplay(roomNum) {
+            const displayEl = document.getElementById(`codeDisplay${roomNum}`);
+            const code = currentInputs[roomNum].padEnd(4, '-');
+            displayEl.innerText = code;
+        }
+
+        function verifyCode(roomNum) {
+            const inputCode = currentInputs[roomNum];
+            if (inputCode === ROOM_CODES[roomNum]) {
+                playSound('success');
+                showToast("✅ Code korrekt! Tür aufgeschlossen.", "border-emerald-500 text-emerald-300");
+                addInventoryItem(INVENTORY_ITEMS[roomNum]);
+                
+                if (roomNum < 4) {
+                    unlockNextRoom(roomNum + 1);
+                } else {
+                    finishGame();
+                }
+            } else {
+                playSound('error');
+                showToast("❌ Falscher Code! Überprüfe deine Rechnungen.", "border-rose-500 text-rose-300");
+                clearCode(roomNum);
+            }
+        }
+
+        function unlockNextRoom(nextRoomNum) {
+            document.getElementById(`room${currentRoom}`).classList.add('hidden');
+            
+            // Step styling
+            const stepEl = document.getElementById(`step${nextRoomNum}`);
+            stepEl.className = "flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40";
+
+            currentRoom = nextRoomNum;
+            document.getElementById(`room${currentRoom}`).classList.remove('hidden');
+        }
+
+        function addInventoryItem(itemText) {
+            const container = document.getElementById('inventoryContainer');
+            if (container.querySelector('.italic')) {
+                container.innerHTML = "";
+            }
+            const badge = document.createElement('span');
+            badge.className = "px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg text-xs font-medium animate-bounce-short";
+            badge.innerText = itemText;
+            container.appendChild(badge);
+        }
+
+        function openHintModal(roomNum) {
+            playSound('click');
+            activeHintModalRoom = roomNum;
+            document.getElementById('hintModalRoomNum').innerText = roomNum;
+            updateHintModalUI();
+            document.getElementById('hintModal').classList.remove('hidden');
+        }
+
+        function closeHintModal() {
+            playSound('click');
+            document.getElementById('hintModal').classList.add('hidden');
+        }
+
+        function unlockHint(hintLevel) {
+            playSound('click');
+            if (!hintsUnlocked[activeHintModalRoom][hintLevel - 1]) {
+                hintsUnlocked[activeHintModalRoom][hintLevel - 1] = true;
+                totalHintsUsedCount++;
+                document.getElementById(`hintCount${activeHintModalRoom}`).innerText = hintsUnlocked[activeHintModalRoom].filter(Boolean).length;
+                updateHintModalUI();
+            }
+        }
+
+        function updateHintModalUI() {
+            const roomData = HINT_DATABASE[activeHintModalRoom];
+            const unlockedList = hintsUnlocked[activeHintModalRoom];
+
+            for (let level = 1; level <= 3; level++) {
+                const isUnlocked = unlockedList[level - 1];
+                const btn = document.getElementById(`btnUnlockHint${level}`);
+                const text = document.getElementById(`textHint${level}`);
+
+                if (isUnlocked) {
+                    btn.classList.add('hidden');
+                    text.innerText = roomData[level];
+                    text.className = "text-xs text-slate-200 font-medium leading-relaxed";
+                } else {
+                    btn.classList.remove('hidden');
+                    text.innerText = "Noch nicht freigeschaltet...";
+                    text.className = "text-xs text-slate-500 italic";
+                }
+            }
+        }
+
+        function finishGame() {
+            clearInterval(timerInterval);
+            playSound('fanfare');
+
+            document.getElementById(`room4`).classList.add('hidden');
+            document.getElementById('screenVictory').classList.remove('hidden');
+
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            const timeStr = `${mins}m ${secs}s`;
+
+            document.getElementById('finalTime').innerText = timeStr;
+            document.getElementById('finalHints').innerText = `${totalHintsUsedCount} / 12`;
+
+            // Calculate Stars
+            let stars = "⭐⭐⭐⭐⭐";
+            if (timerSeconds > 2100 || totalHintsUsedCount > 5) stars = "⭐⭐⭐";
+            else if (timerSeconds > 1500 || totalHintsUsedCount > 3) stars = "⭐⭐⭐⭐";
+
+            document.getElementById('finalStars').innerText = stars;
+
+            // Date for Certificate
+            const now = new Date();
+            document.getElementById('certDate').innerText = now.toLocaleDateString('de-DE');
+        }
+
+        function toggleScratchpad() {
+            playSound('click');
+            const drawer = document.getElementById('scratchpadDrawer');
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+                initCanvas();
+            }
+        }
+
+        let canvas, ctx, isDrawing = false;
+        let strokeColor = '#f1f5f9';
+
+        function initCanvas() {
+            canvas = document.getElementById('scratchCanvas');
+            ctx = canvas.getContext('2d');
+            
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = strokeColor;
+
+            canvas.onmousedown = (e) => startDraw(e.offsetX, e.offsetY);
+            canvas.onmousemove = (e) => draw(e.offsetX, e.offsetY);
+            canvas.onmouseup = () => isDrawing = false;
+
+            // Touch events for iPads / tablets
+            canvas.ontouchstart = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                startDraw(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+            };
+            canvas.ontouchmove = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                draw(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+                e.preventDefault();
+            };
+            canvas.ontouchend = () => isDrawing = false;
+        }
+
+        function startDraw(x, y) {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function draw(x, y) {
+            if (!isDrawing) return;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        function setCanvasColor(color) {
+            strokeColor = color;
+        }
+
+        function clearCanvas() {
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function toggleCalculator() {
+            playSound('click');
+            document.getElementById('calcDrawer').classList.toggle('hidden');
+        }
+
+        let calcExpr = "";
+        function calcInput(val) {
+            playSound('click');
+            const disp = document.getElementById('calcDisplay');
+            if (val === 'C') {
+                calcExpr = "";
+                disp.innerText = "0";
+            } else if (val === '=') {
+                try {
+                    const sanitized = calcExpr.replace(/,/g, '.');
+                    const res = eval(sanitized);
+                    disp.innerText = res;
+                    calcExpr = String(res);
+                } catch (e) {
+                    disp.innerText = "Fehler";
+                    calcExpr = "";
+                }
+            } else {
+                calcExpr += val;
+                disp.innerText = calcExpr;
+            }
+        }
+
+        function showToast(msg, borderClass) {
+            const toast = document.getElementById('toast');
+            toast.className = `fixed top-20 right-4 z-50 bg-slate-900 text-white border ${borderClass} px-4 py-3 rounded-xl shadow-2xl transition transform duration-300 max-w-sm text-xs font-semibold`;
+            toast.innerText = msg;
+            toast.classList.remove('translate-x-full', 'opacity-0');
+
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
